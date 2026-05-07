@@ -1,12 +1,14 @@
-#include <bits/stdc++.h> // Comando que inclu� todas as bibliotecas padr�o do C++
+#include <bits/stdc++.h> // Comando que inclu  todas as bibliotecas padr o do C++
 
 
-#define pmc 1e6
-#define L 100
+#define pmc 1e4
+#define L 80
 #define N (L*L)
 
+#define BLOCO (1000) // INCLUÍ
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-using namespace std; // Simplifica a nota��o de alguns comandos da biblioteca padr�o (iostream).
+using namespace std; // Simplifica a nota  o de alguns comandos da biblioteca padr o (iostream).
 string IntToStr(int n)
 {
     stringstream result;
@@ -20,14 +22,14 @@ int spin[N];
 int nn[N][4];
 
 
-double rand_float()                                 //n�mero aleat�rio entre 0 e 1
+double rand_float()                                 //n mero aleat rio entre 0 e 1
 {
     return (double)rand() / RAND_MAX;
 }
 
 ///////////////////////////////////////
 
-void inicializa_rede()                             //come�a com os spins aleat�rios
+void inicializa_rede()                             //come a com os spins aleat rios
 {
     int i;
     double alpha;
@@ -66,7 +68,7 @@ void boundaries()                                   //define os vizinhos
 
 ////////////////////////////////////
 
-	double calcula_deltaE(int i, double J)            //calcula o delta E
+double calcula_deltaE(int i, double J)            //calcula o delta E
 {
     int soma = 0;
     int j;
@@ -98,9 +100,9 @@ void metropolis_step(double J, double beta)            //metropolis
     }
 }
 
-//// FUN�AO DA ENERGIA /////
+//// FUN AO DA ENERGIA /////
 
-	double calcula_energia(double J)
+double calcula_energia(double J)
 {
     int i;
     double H = 0.0;
@@ -139,15 +141,15 @@ int main()                             //main
 
 
     int i,j;
-	double mag=0;
+    double mag=0;
 
-	//////////////////////////////////////////////////////////////////////////////////
-	string arquivo1;
+    //////////////////////////////////////////////////////////////////////////////////
+    string arquivo1;
     arquivo1 = "Magnetizacao_media.txt";
     FILE *f1 = fopen(arquivo1.c_str(),"w+");
 
     string arquivo2;
-    arquivo2 = "Energia.txt";
+    arquivo2 = "Energia_media.txt";
     FILE *f2 = fopen(arquivo2.c_str(),"w+");
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -157,62 +159,94 @@ int main()                             //main
     boundaries();
     inicializa_rede();
 
-	for (i=0;i<N;i++)
-	{
+    for (i=0; i<N; i++)
+    {
         mag+=spin[i];
-	}
+    }
     printf("Rede inicial:\n");            //rede 1
 
-	mag=mag/N;                         //fun��o da magnetiza��o
+    mag=mag/N;                         //fun  o da magnetiza  o
+
+    mag=fabs(mag); //módulo de mag  INCLUÍ!!
 
     //imprime_rede();
 
-	printf("\nMagnetizacao Inicial = %lf\n", mag);
+    printf("\nMagnetizacao Inicial = %lf\n", mag);
 
     double H_inicial = calcula_energia(J);               //calculo da energia
     printf("\nEnergia inicial = %lf\n", H_inicial);
 
 
+    double Mag_bloco=0;
+    double Energia_bloco=0;
 
-    for(j=0;j<pmc;j++)                                   //evolu��o do sistema
-	{
-		for (i=0;i<N; i++)                                   //enquanto o i for menor que N o sistema percorre todos os spins
-		{
-		    metropolis_step(J, beta);
-		}
-
-		mag=0;
-		for(i=0;i<N;i++)
+    for(j=0; j<pmc; j++)                                 //evolu  o do sistema
+    {
+        for (i=0; i<N; i++)                                  //enquanto o i for menor que N o sistema percorre todos os spins
+        {
+            metropolis_step(J, beta);
+        }
+///////////////MAGNETIZACAO///////////////////////////
+        mag=0;
+        for(i=0; i<N; i++)
         {
             mag+=spin[i];
         }
         mag=mag/N;
-
-		fprintf(f1, "%.4lf \n", mag);
+        mag=fabs(mag);
+        Mag_bloco+=mag;
 
         double H = calcula_energia(J);
-        fprintf(f2, "%.4lf \n", H);
+        Energia_bloco+= H;
 
-	}
+        // printf("Energia = %lf\n iteração :[%d]  J = %lf\n ", H, j, J);
+
+        if(j%BLOCO==0 && j!=0)
+        {
+            Mag_bloco=Mag_bloco/BLOCO;
+            fprintf(f1, "%.4lf \n", Mag_bloco);
+            Mag_bloco=0;
+
+            Energia_bloco = Energia_bloco/BLOCO;
+            fprintf(f2, "%.4lf \n", Energia_bloco);
+            Energia_bloco=0;
+
+        }
+
+    //    fprintf(f1, "%.4lf \n", mag);
+
+    //    double H = calcula_energia(J);
+    //    fprintf(f2, "%.4lf \n", H);
+
+    }
 
 
-    printf("\nRede final:\n");
-    //imprime_rede();
-    mag=0;
+    // printf("\nRede final:\n");
+    // // imprime_rede();
+    // mag=0;
 
-    for(i=0;i<N;i++)
-	{
-		mag+=spin[i];
-        printf("%d", i);
-	}
-	mag=mag/N;
-	printf("\nMagnetizacao Final = %lf\n", mag);
-    double H_final = calcula_energia(J);
-    printf("\nEnergia final = %lf\n", H_final);
-    
-    
-    fprintf(f1, "%.4lf \n", mag);
-    fprintf(f2, "%.4lf \n", H_final);
+    // for(i=0; i<N; i++)
+    // {
+    //     mag+=spin[i];
+    // }
+
+    // mag=mag/N;
+    // mag=fabs(mag);
+
+    // printf("\nMagnetizacao Final = %lf\n", mag);
+    // double H_final = calcula_energia(J);
+
+    // // printf("\nEnergia final = %lf\n", H_final);
+
+
+    // fprintf(f1, "%.4lf \n", mag);
+    // fprintf(f2, "%.4lf \n", H_final);
+
+    printf("%lf\n", calcula_energia(J));
+    for (int i = 0; i < 1000; i++){
+        metropolis_step(J, beta);
+        printf("%lf\n", calcula_energia(J));
+    }
 
     return 0;
 }
